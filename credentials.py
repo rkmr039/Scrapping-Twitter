@@ -1,0 +1,6 @@
+# Variables that access Twitter API and Khabri App
+
+ACCESS_TOKEN = "102672599S1LKNyTDk9TRJVoYbuv"
+ACCESS_TOKEN_SECRET = "gfQlmy8CnKDEgF71AVIaasJrBAg"
+CONSUMER_KEY = "2Z05K2WkHDphu"
+CONSUMER_SECRET = "tpKhug7MXXBpuoZXjdhzF78Bb" 
