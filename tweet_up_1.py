@@ -2,7 +2,6 @@ import tweepy
 from textblob import TextBlob
 from tweepy.auth import OAuthHandler
 
-
 consumer_key = '2Z05K2pb2jyBDphu' 
 consumer_secret = 'tpKhuXXBpuoZXjdhzF78Bb' 
 
