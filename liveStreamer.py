@@ -4,9 +4,11 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import credentials
+from textblob import TextBlob
 import pandas as pd
 import numpy as np
-
+import matplotlib.pyplot as plt
+import re
 # Standered Output Listener class inherited from StreamListener clss
 
 ### Twitter Clients######
@@ -85,8 +87,21 @@ class TweetAnalyzer():
 	"""
 	Functionality for analyzinz and categorizing twets
 	"""
+	def CleanTweet(self, tweet):
+		return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\s+)"," ",tweet).split())
+
+	def AnalyzeSentiment(self, tweet):
+		analysis = TextBlob(self.CleanTweet(tweet))
+
+		if analysis.sentiment.polarity > 0:
+			return 1
+		elif analysis.sentiment.polarity == 0:
+			return 0
+		else:
+			return -1
+		
 	def TweetsToDataFrame(self, tweets):
-		df = pd.DataFrame(data = [tweet.text for tweet in tweets], columns=['Tweets'])
+		df = pd.DataFrame(data = [tweet.text for tweet in tweets], columns=['tweets'])
 		df['id'] = np.array([tweet.id for tweet in tweets])
 		df['len'] = np.array([len(tweet.text) for tweet in tweets])
 		df['date'] = np.array([tweet.created_at for tweet in tweets])
@@ -95,6 +110,44 @@ class TweetAnalyzer():
 		df['retweets'] = np.array([tweet.retweet_count for tweet in tweets])
 
 		return df
+
+	def GetMaximumRetweetCount(self):
+		# Get the number of Retweets for the maximum time retweeted tweet
+		print("Retweet "+str(np.max(df['retweets'])))
+		
+	
+	
+	def GetMaximumLikesCount(self):
+		# Get the number of Retweets for the maximum time retweeted tweet
+		print("Likes "+str(np.max(df['likes'])))
+
+	def GetAverageTweetLength(self):
+		# Get average length over all tweets	
+		print("Average Length of tweets "+ str(np.mean(df['len'])))	
+	
+	def GetLikesTimeSeries(self):
+		# Time Series for Likes
+		time_likes = pd.Series(data = df['likes'].values, index=df['date'])
+		time_likes.plot(figsize=(16, 4), color='r', title='Likes')
+		plt.show()
+		
+	def GetRetweetsTimeSeries(self):
+		# Time Series for Retweets
+		time_retweets = pd.Series(data = df['retweets'].values, index=df['date'])
+		time_retweets.plot(figsize=(16, 4), color='r', title='Retweets')
+		plt.show()
+
+	def GetTimeSeries(self):
+		# Time Series for Likes and Retweets
+
+		time_retweets = pd.Series(data = df['retweets'].values, index=df['date'])
+		time_retweets.plot(figsize=(16, 4), label='Retweets', legend=True)
+		
+		time_likes = pd.Series(data = df['likes'].values, index=df['date'])
+		time_likes.plot(figsize=(16, 4), label='Likes', legend=True)
+		
+		plt.show()
+			
 
 class UserAnalyzer():
 	"""
@@ -128,15 +181,18 @@ if __name__ == '__main__':
 	user_analyzer  = UserAnalyzer() 
 	api = twitter_client.GetClientAPI()
 	sn = 'msdhoni'
-
+	
+	"""
 	data = user_analyzer.GetUserProfileDetails(api,sn)
 	for i in data:
 		print(str(i[0]) + ' : ' + str(i[1]))
-	
+	"""
+
 	tweets = api.user_timeline(screen_name=sn, count=20)
 	df = tweet_analyzer.TweetsToDataFrame(tweets) # df = pd.DataFrame 
-	print(df.head(10))
-	
+
+	df['sentiment'] = np.array([tweet_analyzer.AnalyzeSentiment(tweet) for tweet in df['tweets']])
+	print(df.head(10))		
 	"""
 	# Get  Client's Friend List
 	friend_ids = []
